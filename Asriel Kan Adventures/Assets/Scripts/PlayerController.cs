@@ -11,61 +11,64 @@ public class PlayerController : MonoBehaviour
     public Transform groundCheck;
     public LayerMask groundLayer;
     public float groundCheckRadius;
-    private float _longIdleTimer;
 
+    // References
     private Rigidbody2D _rigidbody;
     private Animator _animator;
 
+    // Long Idle
+    private float _longIdleTimer;
+
+    // Movement
     private Vector2 _movement;
     private bool _facingRight = true;
     private bool _isGrounded;
 
+    // Attack
     private bool _isAttacking;
+
 
     void Awake()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
     }
-    // Start is called before the first frame update
+
     void Start()
     {
-        
+
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if(_isAttacking == false)
+        if (_isAttacking == false)
         {
-            //Movement
+            // Movement
             float horizontalInput = Input.GetAxisRaw("Horizontal");
             _movement = new Vector2(horizontalInput, 0f);
 
-            //Flip character
-            if(horizontalInput < 0f && _facingRight == true)
+            // Flip character
+            if (horizontalInput < 0f && _facingRight == true)
             {
                 Flip();
             }
-
             else if (horizontalInput > 0f && _facingRight == false)
             {
                 Flip();
             }
         }
-        
 
-        //Is grounded?
+        // Is Grounded?
         _isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
-        //Is Jumping?
-        if(Input.GetButtonDown("Jump") && _isGrounded == true && _isAttacking == false)
+        // Is Jumping?
+        if (Input.GetButtonDown("Jump") && _isGrounded == true && _isAttacking == false)
         {
             _rigidbody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
         }
 
-        //Wanna Attack?
-        if(Input.GetButtonDown("Fire1") && _isGrounded == true && _isAttacking == false)
+        // Wanna Attack?
+        if (Input.GetButtonDown("Fire1") && _isGrounded == true && _isAttacking == false)
         {
             _movement = Vector2.zero;
             _rigidbody.velocity = Vector2.zero;
@@ -75,12 +78,11 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if(_isAttacking == false)
+        if (_isAttacking == false)
         {
             float horizontalVelocity = _movement.normalized.x * speed;
             _rigidbody.velocity = new Vector2(horizontalVelocity, _rigidbody.velocity.y);
         }
-        
     }
 
     void LateUpdate()
@@ -89,29 +91,30 @@ public class PlayerController : MonoBehaviour
         _animator.SetBool("IsGrounded", _isGrounded);
         _animator.SetFloat("VerticalVelocity", _rigidbody.velocity.y);
 
-        if(_animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
+        // Animator
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
         {
             _isAttacking = true;
         }
-
-        else{
+        else
+        {
             _isAttacking = false;
         }
 
-        if(_animator.GetCurrentAnimatorStateInfo(0).IsTag("Idle"))
+        // Long Idle
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsTag("Idle"))
         {
             _longIdleTimer += Time.deltaTime;
 
-            if(_longIdleTimer >= longIdleTime)
+            if (_longIdleTimer >= longIdleTime)
             {
                 _animator.SetTrigger("LongIdle");
             }
         }
-
-        else{
+        else
+        {
             _longIdleTimer = 0f;
         }
-
     }
 
     private void Flip()
